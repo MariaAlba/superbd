@@ -2,6 +2,6 @@
 
 <%@ include file="/includes/header.jsp" %>   
     	
-	<h1>Dashboard</h1>
+	<h2 class="text-center py-2">Dashboard</h2>
 
 <%@ include file="/includes/footer.jsp" %> 
