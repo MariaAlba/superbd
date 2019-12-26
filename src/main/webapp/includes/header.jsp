@@ -57,8 +57,8 @@
       			<div class="nav-item dropdown show">
         			<a class="nav-link dropdown-toggle" href="#" id="dropdown02" data-toggle="dropdown">Usuarios</a>
 			        <div class="dropdown-menu" aria-labelledby="dropdown02">
-			          <a class="dropdown-item" href="seguridad/productos?accion=listar">Todos</a>
-			          <a class="dropdown-item" href="seguridad/productos?accion=formulario">Nuevo</a>			          
+			          <a class="dropdown-item" href="seguridad/usuarios?accion=listar">Todos</a>
+			          <a class="dropdown-item" href="seguridad/usuarios?accion=formulario">Nuevo</a>			          
 			        </div>
       			</div>
       			<div class="nav-item dropdown show d-none d-md-inline-block">
