@@ -5,9 +5,12 @@ import java.sql.Connection;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+
 public class ConnectionManager {
 
 	private static Connection conn;
+	private final static Logger LOG = Logger.getLogger(ConnectionManager.class);
 
 	public static Connection getConnection() {
 
@@ -31,5 +34,5 @@ public class ConnectionManager {
 		return conn;
 
 	}
-	
+
 }
