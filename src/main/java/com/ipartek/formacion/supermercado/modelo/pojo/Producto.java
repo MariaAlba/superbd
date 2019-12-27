@@ -1,7 +1,5 @@
 package com.ipartek.formacion.supermercado.modelo.pojo;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -10,26 +8,27 @@ import org.hibernate.validator.constraints.Range;
 
 public class Producto {
 
-	
 	public static final int DESCUENTO_MIN = 0;
 	public static final int DESCUENTO_MAX = 100;
-	
+
 	private int id;
-	
+
 	@NotNull
 	@NotBlank
-	@Size( min = 2, max = 50)
+	@Size(min = 2, max = 50)
 	private String nombre;
-	
+
 	private float precio;
-	
+
 	private String imagen;
-	
+
 	private String descripcion;
-	
-	@Range(min = 0, max= 100)
+
+	@Range(min = 0, max = 100)
 	private int descuento;
-	
+
+	private Usuario usuario;
+
 	public Producto() {
 		super();
 		this.id = 0;
@@ -38,6 +37,7 @@ public class Producto {
 		this.imagen = "https://image.flaticon.com/icons/png/512/372/372627.png";
 		this.descripcion = "";
 		this.descuento = DESCUENTO_MIN;
+		this.usuario = new Usuario();
 	}
 
 	public int getId() {
@@ -87,9 +87,17 @@ public class Producto {
 	public void setDescuento(int descuento) {
 		this.descuento = descuento;
 	}
-	
+
 	public float getPrecioDescuento() {
-		return (  (this.precio * ( 100 - this.descuento )) / 100  );
+		return ((this.precio * (100 - this.descuento)) / 100);
+	}
+
+	public Usuario getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
 	}
 
 	@Override
@@ -97,5 +105,5 @@ public class Producto {
 		return "Producto [id=" + id + ", nombre=" + nombre + ", precio=" + precio + ", imagen=" + imagen
 				+ ", descripcion=" + descripcion + ", descuento=" + descuento + "]";
 	}
-		
+
 }

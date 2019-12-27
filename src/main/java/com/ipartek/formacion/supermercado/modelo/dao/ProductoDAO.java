@@ -15,7 +15,11 @@ public class ProductoDAO implements IDAO<Producto> {
 
 	private static ProductoDAO INSTANCE;
 
-	private static final String SQL_GET_ALL = "SELECT id, nombre, descripcion, imagen, precio, descuento FROM producto ORDER BY id DESC LIMIT 500;";
+	private static UsuarioDAO dao;
+
+	private static final String SQL_GET_ALL = " SELECT p.id, p.nombre, p.descripcion, p.imagen, p.precio, p.descuento, "
+			+ " u.nombre " + " FROM producto  AS p " + " INNER JOIN usuario AS u ON p.id_usuario = u.id "
+			+ " ORDER BY p.nombre ASC LIMIT 500;";
 	private static final String SQL_GET_BY_ID = "SELECT id, nombre, descripcion, imagen, precio, descuento FROM producto WHERE id = ? ;";
 	private static final String SQL_GET_INSERT = "INSERT INTO producto ( nombre, descripcion, imagen, precio, descuento) VALUES ( ?,?,?,?,? );";
 	private static final String SQL_GET_UPDATE = "UPDATE producto SET nombre = ?, descripcion = ?, imagen = ?, precio = ?, descuento = ? WHERE id = ? ;";
@@ -52,6 +56,7 @@ public class ProductoDAO implements IDAO<Producto> {
 				p.setImagen(rs.getString("imagen"));
 				p.setPrecio(rs.getFloat("precio"));
 				p.setDescuento(rs.getInt("descuento"));
+				p.setUsuario(dao.getById(rs.getInt("id_usuario")));
 				lista.add(p);
 
 			}
