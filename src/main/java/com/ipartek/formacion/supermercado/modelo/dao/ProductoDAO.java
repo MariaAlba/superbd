@@ -192,7 +192,6 @@ public class ProductoDAO implements IDAO<Producto> {
 		u.setId(rs.getInt("id_usuario"));
 
 		p.setUsuario(u);
-
 		return p;
 	}
 }
