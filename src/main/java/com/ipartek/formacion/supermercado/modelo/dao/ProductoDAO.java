@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.ipartek.formacion.supermercado.model.ConnectionManager;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
+import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
 public class ProductoDAO implements IDAO<Producto> {
 
@@ -17,9 +18,9 @@ public class ProductoDAO implements IDAO<Producto> {
 
 	private static UsuarioDAO dao;
 
-	private static final String SQL_GET_ALL = " SELECT p.id, p.nombre, p.descripcion, p.imagen, p.precio, p.descuento, "
-			+ " u.nombre " + " FROM producto  AS p " + " INNER JOIN usuario AS u ON p.id_usuario = u.id "
-			+ " ORDER BY p.nombre ASC LIMIT 500;";
+	private static final String SQL_GET_ALL = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
+			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
+			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " ORDER BY p.nombre ASC LIMIT 500;";
 	private static final String SQL_GET_BY_ID = "SELECT id, nombre, descripcion, imagen, precio, descuento FROM producto WHERE id = ? ;";
 	private static final String SQL_GET_INSERT = "INSERT INTO producto ( nombre, descripcion, imagen, precio, descuento) VALUES ( ?,?,?,?,? );";
 	private static final String SQL_GET_UPDATE = "UPDATE producto SET nombre = ?, descripcion = ?, imagen = ?, precio = ?, descuento = ? WHERE id = ? ;";
@@ -50,13 +51,19 @@ public class ProductoDAO implements IDAO<Producto> {
 			while (rs.next()) {
 
 				Producto p = new Producto();
-				p.setId(rs.getInt("id"));
-				p.setNombre(rs.getString("nombre"));
+				p.setId(rs.getInt("id_producto"));
+				p.setNombre(rs.getString("nombre_producto"));
 				p.setDescripcion(rs.getString("descripcion"));
 				p.setImagen(rs.getString("imagen"));
 				p.setPrecio(rs.getFloat("precio"));
 				p.setDescuento(rs.getInt("descuento"));
-				p.setUsuario(dao.getById(rs.getInt("id_usuario")));
+
+				Usuario u = new Usuario();
+				u.setNombre(rs.getString("nombre_usuario"));
+				u.setId(rs.getInt("id_usuario"));
+
+				p.setUsuario(u);
+
 				lista.add(p);
 
 			}
