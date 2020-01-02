@@ -16,14 +16,21 @@ public class ProductoDAO implements IDAO<Producto> {
 
 	private static ProductoDAO INSTANCE;
 
-	private static UsuarioDAO dao;
-
 	private static final String SQL_GET_ALL = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
 			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
 			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " ORDER BY p.nombre ASC LIMIT 500;";
-	private static final String SQL_GET_BY_ID = "SELECT id, nombre, descripcion, imagen, precio, descuento FROM producto WHERE id = ? ;";
-	private static final String SQL_GET_INSERT = "INSERT INTO producto ( nombre, descripcion, imagen, precio, descuento) VALUES ( ?,?,?,?,? );";
-	private static final String SQL_GET_UPDATE = "UPDATE producto SET nombre = ?, descripcion = ?, imagen = ?, precio = ?, descuento = ? WHERE id = ? ;";
+
+	private static final String SQL_GET_BY_ID = "SELECT p.id as id_producto, p.nombre as nombre_producto,"
+			+ " p.descripcion, p.imagen, p.precio, p.descuento, u.nombre as nombre_usuario, u.id as id_usuario "
+			+ " FROM producto  AS p " + "	INNER JOIN usuario AS u ON p.id_usuario = u.id"
+			+ " WHERE p.id = ? ORDER BY p.nombre ASC LIMIT 500;";
+
+	private static final String SQL_GET_INSERT = "INSERT INTO producto (nombre, descripcion, imagen, precio, descuento, id_usuario) "
+			+ "VALUES ( ?, ?, ?, ?, ?, ?);";
+
+	private static final String SQL_GET_UPDATE = "UPDATE producto SET " + " nombre = ?, " + " descripcion = ?, "
+			+ " imagen = ?, " + " precio = ?, " + " descuento = ?, " + " id_usuario = ? " + " WHERE (id = ?);";
+
 	private static final String SQL_DELETE = "DELETE FROM producto WHERE id = ? ;";
 
 	private ProductoDAO() {
@@ -50,21 +57,7 @@ public class ProductoDAO implements IDAO<Producto> {
 
 			while (rs.next()) {
 
-				Producto p = new Producto();
-				p.setId(rs.getInt("id_producto"));
-				p.setNombre(rs.getString("nombre_producto"));
-				p.setDescripcion(rs.getString("descripcion"));
-				p.setImagen(rs.getString("imagen"));
-				p.setPrecio(rs.getFloat("precio"));
-				p.setDescuento(rs.getInt("descuento"));
-
-				Usuario u = new Usuario();
-				u.setNombre(rs.getString("nombre_usuario"));
-				u.setId(rs.getInt("id_usuario"));
-
-				p.setUsuario(u);
-
-				lista.add(p);
+				lista.add(mapper(rs));
 
 			}
 
@@ -91,13 +84,7 @@ public class ProductoDAO implements IDAO<Producto> {
 
 				while (rs.next()) {
 
-					registro = new Producto();
-					registro.setId(rs.getInt("id"));
-					registro.setNombre(rs.getString("nombre"));
-					registro.setDescripcion(rs.getString("descripcion"));
-					registro.setImagen(rs.getString("imagen"));
-					registro.setPrecio(rs.getFloat("precio"));
-					registro.setDescuento(rs.getInt("descuento"));
+					registro = mapper(rs);
 
 				}
 			}
@@ -141,7 +128,8 @@ public class ProductoDAO implements IDAO<Producto> {
 			pst.setString(3, pojo.getImagen());
 			pst.setFloat(4, pojo.getPrecio());
 			pst.setInt(5, pojo.getDescuento());
-			pst.setInt(6, id);
+			pst.setInt(6, pojo.getUsuario().getId());
+			pst.setInt(7, id);
 
 			int affectedRows = pst.executeUpdate(); // lanza una excepcion si nombre repetido
 			if (affectedRows == 1) {
@@ -165,6 +153,7 @@ public class ProductoDAO implements IDAO<Producto> {
 			pst.setString(3, pojo.getImagen());
 			pst.setFloat(4, pojo.getPrecio());
 			pst.setInt(5, pojo.getDescuento());
+			pst.setInt(6, pojo.getUsuario().getId());
 
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 1) {
@@ -181,4 +170,29 @@ public class ProductoDAO implements IDAO<Producto> {
 		return pojo;
 	}
 
+	/**
+	 * Utilidad par mapear un result set a un producto
+	 * 
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 */
+	private Producto mapper(ResultSet rs) throws SQLException {
+
+		Producto p = new Producto();
+		p.setId(rs.getInt("id_producto"));
+		p.setNombre(rs.getString("nombre_producto"));
+		p.setDescripcion(rs.getString("descripcion"));
+		p.setImagen(rs.getString("imagen"));
+		p.setPrecio(rs.getFloat("precio"));
+		p.setDescuento(rs.getInt("descuento"));
+
+		Usuario u = new Usuario();
+		u.setNombre(rs.getString("nombre_usuario"));
+		u.setId(rs.getInt("id_usuario"));
+
+		p.setUsuario(u);
+
+		return p;
+	}
 }

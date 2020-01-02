@@ -15,8 +15,10 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 import com.ipartek.formacion.supermercado.modelo.dao.ProductoDAO;
+import com.ipartek.formacion.supermercado.modelo.dao.UsuarioDAO;
 import com.ipartek.formacion.supermercado.modelo.pojo.Alerta;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
+import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
 /**
  * Servlet implementation class ProductosController
@@ -29,6 +31,7 @@ public class ProductosController extends HttpServlet {
 	private static final String VIEW_FORM = "productos/formulario.jsp";
 	private static String vistaSeleccionda = VIEW_TABLA;
 	private static ProductoDAO dao;
+	private static UsuarioDAO daoUsuario;
 
 	// acciones
 	public static final String ACCION_LISTAR = "listar";
@@ -48,11 +51,13 @@ public class ProductosController extends HttpServlet {
 	String pImagen;
 	String pDescripcion;
 	String pDescuento;
+	String pUsuarioId;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		dao = ProductoDAO.getInstance();
+		daoUsuario = UsuarioDAO.getInstance();
 		factory = Validation.buildDefaultValidatorFactory();
 		validator = factory.getValidator();
 	}
@@ -61,23 +66,16 @@ public class ProductosController extends HttpServlet {
 	public void destroy() {
 		super.destroy();
 		dao = null;
+		daoUsuario = null;
 		factory = null;
 		validator = null;
 	}
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		doAction(request, response);
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		doAction(request, response);
@@ -94,6 +92,7 @@ public class ProductosController extends HttpServlet {
 		pImagen = request.getParameter("imagen");
 		pDescripcion = request.getParameter("descripcion");
 		pDescuento = request.getParameter("descuento");
+		pUsuarioId = request.getParameter("usuarioId");
 
 		try {
 
@@ -137,6 +136,7 @@ public class ProductosController extends HttpServlet {
 
 		}
 
+		request.setAttribute("usuarios", daoUsuario.getAll());
 		request.setAttribute("producto", pEditar);
 		vistaSeleccionda = VIEW_FORM;
 
@@ -145,6 +145,7 @@ public class ProductosController extends HttpServlet {
 	private void guardar(HttpServletRequest request, HttpServletResponse response) {
 
 		int id = Integer.parseInt(pId);
+
 		Producto pGuardar = new Producto();
 		pGuardar.setId(id);
 		pGuardar.setNombre(pNombre);
@@ -152,6 +153,10 @@ public class ProductosController extends HttpServlet {
 		pGuardar.setImagen(pImagen);
 		pGuardar.setPrecio(Float.parseFloat(pPrecio));
 		pGuardar.setDescuento(Integer.parseInt(pDescuento));
+
+		Usuario u = new Usuario();
+		u.setId(Integer.parseInt(pUsuarioId));
+		pGuardar.setUsuario(u);
 
 		Set<ConstraintViolation<Producto>> validaciones = validator.validate(pGuardar);
 		if (validaciones.size() > 0) {
@@ -163,9 +168,13 @@ public class ProductosController extends HttpServlet {
 				if (id > 0) { // modificar
 
 					dao.update(id, pGuardar);
+					request.setAttribute("mensajeAlerta",
+							new Alerta(Alerta.TIPO_PRIMARY, " Producto modificado con éxito"));
 
 				} else { // crear
 					dao.create(pGuardar);
+					request.setAttribute("mensajeAlerta",
+							new Alerta(Alerta.TIPO_PRIMARY, " Producto guardado con éxito"));
 				}
 
 			} catch (Exception e) { // validacion a nivel de base datos
@@ -175,6 +184,7 @@ public class ProductosController extends HttpServlet {
 
 		}
 
+		request.setAttribute("usuarios", daoUsuario.getAll());
 		request.setAttribute("producto", pGuardar);
 		vistaSeleccionda = VIEW_FORM;
 

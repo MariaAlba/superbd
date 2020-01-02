@@ -3,12 +3,23 @@
 <%@ include file="/includes/header.jsp"%>
 
 
-
 <form class="form p-5 border" action="seguridad/productos" method="post">
 
 	<input type="hidden" name="id" value="${producto.id}">
 	<input type="hidden" name="accion" value="guardar"> 
-
+	
+	
+	<div class="form-group row">
+		<div class="col-lg-6">
+			<label>Usuario</label><br /> 
+			<select class="form-control" name= "usuarioId">
+			<c:forEach items="${usuarios }" var="u">
+				<option value="${u.id}" ${ u.id == producto.usuario.id ? "selected": "" }>${u.nombre}</option>
+			</c:forEach>
+			</select>
+		</div>
+	</div>
+	
 	<div class="form-group row">
 		<div class="col-lg-6">
 			<label>Nombre</label><br /> 

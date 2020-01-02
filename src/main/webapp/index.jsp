@@ -7,7 +7,7 @@
         
         	<c:forEach items="${productos}" var="p">
 
-	            <div class="col">
+	            <div class="col mb-5">
 	
 	                <!-- producto -->
 	                <div class="producto">
