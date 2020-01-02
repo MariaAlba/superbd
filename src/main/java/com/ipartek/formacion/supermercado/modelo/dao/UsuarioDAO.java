@@ -11,16 +11,31 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.ipartek.formacion.supermercado.model.ConnectionManager;
+import com.ipartek.formacion.supermercado.modelo.pojo.Rol;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
 public class UsuarioDAO implements IUsuarioDAO {
 
 	private final static Logger LOG = Logger.getLogger(UsuarioDAO.class);
 
-	private static final String SQL_EXIST = "SELECT id, nombre, contrasenia FROM usuario WHERE nombre = ? AND contrasenia = ?; ";
-	private static final String SQL_GET_ALL = "SELECT id, nombre, contrasenia FROM usuario;";
-	private static final String SQL_GET_BY_ID = "SELECT id, nombre, contrasenia FROM usuario WHERE id = ? ;";
+	private static final String SQL_EXIST = "SELECT u.id as 'id_usuario'," + " u.nombre as 'nombre_usuario',"
+			+ " u.contrasenia," + " r.id as 'id_rol'," + " r.nombre as 'nombre_rol' " + " FROM usuario u, rol r "
+			+ " WHERE u.id_rol = r.id " + " AND u.nombre = ?  AND u.contrasenia = ?;";
+
+	private static final String SQL_GET_ALL = "SELECT u.id as 'id_usuario'," + " u.nombre as 'nombre_usuario',"
+			+ " u.contrasenia," + " r.id as 'id_rol'," + " r.nombre as 'nombre_rol' " + " FROM usuario u, rol r"
+			+ " WHERE u.id_rol = r.id;";
+
+	// "SELECT id, nombre, contrasenia FROM usuario;";
+
+	private static final String SQL_GET_BY_ID = "SELECT u.id as 'id_usuario'," + " u.nombre as 'nombre_usuario',"
+			+ " u.contrasenia," + " r.id as 'id_rol'," + " r.nombre as 'nombre_rol' " + " FROM usuario u, rol "
+			+ " WHERE u.id_rol = r.id " + " AND id_usuario = ?; ";
+
+	// "SELECT id, nombre, contrasenia FROM usuario WHERE id = ? ;";
+
 	private static final String SQL_DELETE = "DELETE FROM usuario WHERE id = ? ;";
+
 	private static final String SQL_UPDATE = "UPDATE usuario SET nombre = ?, contrasenia = ? WHERE id = ? ;";
 	private static final String SQL_INSERT = "INSERT INTO usuario (nombre, contrasenia) VALUES (?, ?);";
 
@@ -50,9 +65,16 @@ public class UsuarioDAO implements IUsuarioDAO {
 			while (rs.next()) {
 
 				Usuario u = new Usuario();
-				u.setId(rs.getInt("id"));
-				u.setNombre(rs.getString("nombre"));
+				u.setId(rs.getInt("id_usuario"));
+				u.setNombre(rs.getString("nombre_usuario"));
 				u.setContrasenia(rs.getString("contrasenia"));
+
+				Rol rol = new Rol();
+				rol.setId(rs.getInt("id_rol"));
+				rol.setNombre(rs.getString("nombre_rol"));
+
+				u.setRol(rol);
+
 				lista.add(u);
 
 			}
@@ -81,9 +103,16 @@ public class UsuarioDAO implements IUsuarioDAO {
 				while (rs.next()) {
 
 					registro = new Usuario();
-					registro.setId(rs.getInt("id"));
-					registro.setNombre(rs.getString("nombre"));
+					registro.setId(rs.getInt("id_usuario"));
+					registro.setNombre(rs.getString("nombre_usuario"));
 					registro.setContrasenia(rs.getString("contrasenia"));
+
+					Rol rol = new Rol();
+					rol.setId(rs.getInt("id_rol"));
+					rol.setNombre(rs.getString("nombre_rol"));
+
+					registro.setRol(rol);
+
 				}
 			}
 
@@ -174,9 +203,15 @@ public class UsuarioDAO implements IUsuarioDAO {
 				if (rs.next()) {
 					// mapear del RS al POJO
 					resul = new Usuario();
-					resul.setId(rs.getInt("id"));
-					resul.setNombre(rs.getString("nombre"));
+					resul.setId(rs.getInt("id_usuario"));
+					resul.setNombre(rs.getString("nombre_usuario"));
 					resul.setContrasenia(rs.getString("contrasenia"));
+
+					Rol rol = new Rol();
+					rol.setId(rs.getInt("id_rol"));
+					rol.setNombre(rs.getString("nombre_rol"));
+
+					resul.setRol(rol);
 				}
 			}
 

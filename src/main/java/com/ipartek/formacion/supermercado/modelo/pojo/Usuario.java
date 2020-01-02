@@ -5,22 +5,35 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 
 public class Usuario {
-	
+
 	private int id;
-	
+
 	@NotBlank
-	@Size( min = 2, max = 50)
+	@Size(min = 2, max = 50)
 	private String nombre;
-	
+
 	@NotBlank
-	@Size( min = 2, max = 50)
+	@Size(min = 2, max = 50)
 	private String contrasenia;
+
+	// @Valid significa que tendria que validarse como ese objeto se valida
+	// internamente
+	private Rol rol;
 
 	public Usuario() {
 		super();
 		this.id = 0;
 		this.nombre = "";
 		this.contrasenia = "";
+		this.rol = new Rol();
+	}
+
+	public Rol getRol() {
+		return rol;
+	}
+
+	public void setRol(Rol rol) {
+		this.rol = rol;
 	}
 
 	public int getId() {
@@ -49,8 +62,7 @@ public class Usuario {
 
 	@Override
 	public String toString() {
-		return "Usuario [id=" + id + ", nombre=" + nombre + ", contrasenia=" + contrasenia + "]";
+		return "Usuario [id=" + id + ", nombre=" + nombre + ", contrasenia=" + contrasenia + ", rol=" + rol + "]";
 	}
-	
-	
+
 }
