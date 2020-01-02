@@ -8,6 +8,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.ipartek.formacion.supermercado.model.ConnectionManager;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
@@ -15,6 +17,7 @@ import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 public class ProductoDAO implements IDAO<Producto> {
 
 	private static ProductoDAO INSTANCE;
+	private final static Logger LOG = Logger.getLogger(ProductoDAO.class);
 
 	private static final String SQL_GET_ALL = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
 			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
@@ -32,6 +35,11 @@ public class ProductoDAO implements IDAO<Producto> {
 			+ " imagen = ?, " + " precio = ?, " + " descuento = ?, " + " id_usuario = ? " + " WHERE (id = ?);";
 
 	private static final String SQL_DELETE = "DELETE FROM producto WHERE id = ? ;";
+
+	private static final String SQL_GET_ALL_BY_USER = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
+			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
+			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " WHERE p.id_usuario = ? "
+			+ " ORDER BY p.nombre ASC LIMIT 500;";
 
 	private ProductoDAO() {
 		super();
@@ -55,6 +63,7 @@ public class ProductoDAO implements IDAO<Producto> {
 				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL);
 				ResultSet rs = pst.executeQuery()) {
 
+			LOG.debug("prepared statement: " + rs);
 			while (rs.next()) {
 
 				lista.add(mapper(rs));
@@ -63,6 +72,35 @@ public class ProductoDAO implements IDAO<Producto> {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			LOG.error("Excepcion: " + e);
+		}
+
+		return lista;
+	}
+
+	public List<Producto> getAllByUser(int usuarioId) {
+
+		ArrayList<Producto> lista = new ArrayList<Producto>();
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL_BY_USER)) {
+
+			// sustituyo parametros en la SQL, en este caso 1º ? por id
+			pst.setInt(1, usuarioId);
+
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+
+				lista.add(mapper(rs));
+
+			}
+
+		} catch (
+
+		SQLException e) {
+			e.printStackTrace();
+			LOG.error("excepcion " + e);
 		}
 
 		return lista;
