@@ -47,7 +47,7 @@
             
             <c:if test="${usuarioLogeado.rol.id eq 2 }" >
             	<div class="nav-item dropdown show">
-        			<a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown">Producto</a>
+        			<a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown">Productos</a>
 			        <div class="dropdown-menu" aria-labelledby="dropdown01">
 			          <a class="dropdown-item" href="seguridad/productos?accion=listar">Todos</a>
 			          <a class="dropdown-item" href="seguridad/productos?accion=formulario">Nuevo</a>
@@ -68,16 +68,14 @@
 					          
 			        </div>
       			</div>
-            	<!-- <a class="py-2 d-none d-md-inline-block" href="seguridad/productos?accion=listar">Tabla</a>
-            	<a class="py-2 d-none d-md-inline-block" href="seguridad/productos?accion=formulario">Formulario</a> -->
-         <!--    	<a class="py-2 d-none d-md-inline-block" href="logout">Cerrar Sessión</a> -->
+       
             </c:if>	            
            
             <c:if test="${usuarioLogeado.rol.id eq 1 }" >
             	<div class="nav-item dropdown show">
-        			<a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown">Producto</a>
+        			<a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown">Productos</a>
 			        <div class="dropdown-menu" aria-labelledby="dropdown01">
-			          <a class="dropdown-item" href="mipanel/productos?accion=listar">Todos</a>
+			          <a class="dropdown-item" href="mipanel/productos?accion=listar">Mis productos</a>
 			          <a class="dropdown-item" href="mipanel/productos?accion=formulario">Nuevo</a>
 			          
 			        </div>
@@ -85,6 +83,7 @@
       			<div class="nav-item dropdown show d-none d-md-inline-block">
         			<a class="nav-link dropdown-toggle" href="#" id="dropdown02" data-toggle="dropdown">${sessionScope.usuarioLogeado.nombre}</a>
 			        <div class="dropdown-menu" aria-labelledby="dropdown02">
+			          <a class="dropdown-item" href="mipanel/perfil">Mi perfil</a>
 			          <a class="dropdown-item" href="logout">Cerrar Sessión</a>
 					          
 			        </div>
