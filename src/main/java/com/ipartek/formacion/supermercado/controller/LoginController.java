@@ -1,6 +1,7 @@
 package com.ipartek.formacion.supermercado.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,8 +12,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 
+import com.ipartek.formacion.supermercado.modelo.dao.ProductoDAO;
 import com.ipartek.formacion.supermercado.modelo.dao.UsuarioDAO;
 import com.ipartek.formacion.supermercado.modelo.pojo.Alerta;
+import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 import com.ipartek.formacion.supermercado.modelo.pojo.Rol;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
@@ -26,6 +29,7 @@ public class LoginController extends HttpServlet {
 	private final static Logger LOG = Logger.getLogger(LoginController.class);
 
 	private static UsuarioDAO usuarioDao = UsuarioDAO.getInstance();
+	private static ProductoDAO productoDao = ProductoDAO.getInstance();
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
@@ -61,9 +65,16 @@ public class LoginController extends HttpServlet {
 
 				if (usuario.getRol().getId() == Rol.ROL_ADMIN) {
 					// accedemos backoffice
+					ArrayList<Producto> todos = (ArrayList<Producto>) productoDao.getAll();
+					request.setAttribute("productosTodosNum", todos.size());
+					request.setAttribute("productosAdminNum", productoDao.getAllByUser(usuario.getId()).size());
+					request.setAttribute("usuariosTodosNum", usuarioDao.getAll().size());
 					view = "seguridad/index.jsp";
 				} else {
 					// accedemos frontoffice
+					ArrayList<Producto> productos = (ArrayList<Producto>) productoDao.getAllByUser(usuario.getId());
+					request.setAttribute("miUsuario", usuario);
+					request.setAttribute("misProductos", productos.size());
 					view = "mipanel/index.jsp";
 				}
 
