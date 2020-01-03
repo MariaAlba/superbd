@@ -14,6 +14,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.apache.log4j.Logger;
+
 import com.ipartek.formacion.supermercado.modelo.dao.ProductoDAO;
 import com.ipartek.formacion.supermercado.modelo.dao.UsuarioDAO;
 import com.ipartek.formacion.supermercado.modelo.pojo.Alerta;
@@ -26,10 +28,14 @@ import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 @WebServlet("/seguridad/productos")
 public class ProductosController extends HttpServlet {
 
+	private final static Logger LOG = Logger.getLogger(ProductosController.class);
+
 	private static final long serialVersionUID = 1L;
+
 	private static final String VIEW_TABLA = "productos/index.jsp";
 	private static final String VIEW_FORM = "productos/formulario.jsp";
 	private static String vistaSeleccionda = VIEW_TABLA;
+
 	private static ProductoDAO dao;
 	private static UsuarioDAO daoUsuario;
 
@@ -115,8 +121,7 @@ public class ProductosController extends HttpServlet {
 			}
 
 		} catch (Exception e) {
-			// TODO log
-			e.printStackTrace();
+			LOG.error(e);
 
 		} finally {
 
@@ -178,7 +183,7 @@ public class ProductosController extends HttpServlet {
 				}
 
 			} catch (Exception e) { // validacion a nivel de base datos
-
+				LOG.fatal("FATAL: " + e);
 				request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "Problema en la BBDD"));
 			}
 
@@ -214,6 +219,7 @@ public class ProductosController extends HttpServlet {
 			request.setAttribute("mensajeAlerta",
 					new Alerta(Alerta.TIPO_PRIMARY, "Eliminado " + pEliminado.getNombre()));
 		} catch (Exception e) {
+			LOG.error("ERROR: " + e);
 			request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "No se puede Eliminar el producto"));
 
 		}

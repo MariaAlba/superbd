@@ -15,6 +15,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.apache.log4j.Logger;
+
 import com.ipartek.formacion.supermercado.modelo.dao.ProductoDAO;
 import com.ipartek.formacion.supermercado.modelo.dao.UsuarioDAO;
 import com.ipartek.formacion.supermercado.modelo.pojo.Alerta;
@@ -27,12 +29,18 @@ import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 @WebServlet("/mipanel/productos")
 public class ProductosController extends HttpServlet {
 
+	private final static Logger LOG = Logger.getLogger(ProductosController.class);
+
 	private static final long serialVersionUID = 1L;
+
 	private static final String VIEW_TABLA = "productos/index.jsp";
 	private static final String VIEW_FORM = "productos/formulario.jsp";
 	private static String vistaSeleccionda = VIEW_TABLA;
+
 	private static ProductoDAO dao;
 	private static UsuarioDAO daoUsuario;
+
+	private static Usuario uLogeado;
 
 	// acciones
 	public static final String ACCION_LISTAR = "listar";
@@ -52,7 +60,6 @@ public class ProductosController extends HttpServlet {
 	String pImagen;
 	String pDescripcion;
 	String pDescuento;
-	String pUsuarioId;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -93,7 +100,6 @@ public class ProductosController extends HttpServlet {
 		pImagen = request.getParameter("imagen");
 		pDescripcion = request.getParameter("descripcion");
 		pDescuento = request.getParameter("descuento");
-		pUsuarioId = request.getParameter("usuarioId");
 
 		try {
 
@@ -116,7 +122,7 @@ public class ProductosController extends HttpServlet {
 			}
 
 		} catch (Exception e) {
-			// TODO log
+			LOG.error(e);
 			e.printStackTrace();
 
 		} finally {
@@ -155,11 +161,6 @@ public class ProductosController extends HttpServlet {
 		pGuardar.setPrecio(Float.parseFloat(pPrecio));
 		pGuardar.setDescuento(Integer.parseInt(pDescuento));
 
-		Usuario u = new Usuario();
-		HttpSession sesion = request.getSession();
-		u = (Usuario) sesion.getAttribute("usuarioLogeado");
-		pGuardar.setUsuario(u);
-
 		Set<ConstraintViolation<Producto>> validaciones = validator.validate(pGuardar);
 		if (validaciones.size() > 0) {
 			mensajeValidacion(request, validaciones);
@@ -169,26 +170,44 @@ public class ProductosController extends HttpServlet {
 
 				if (id > 0) { // modificar
 
-					dao.update(id, pGuardar);
-					request.setAttribute("mensajeAlerta",
-							new Alerta(Alerta.TIPO_PRIMARY, " Producto modificado con éxito"));
+					if (verificarProductoUsuario(request, response, pGuardar)) {
+
+						dao.update(id, pGuardar);
+						request.setAttribute("mensajeAlerta",
+								new Alerta(Alerta.TIPO_PRIMARY, " Producto modificado con éxito"));
+						request.setAttribute("usuarios", daoUsuario.getAll());
+						request.setAttribute("producto", pGuardar);
+						vistaSeleccionda = VIEW_FORM;
+					} else {
+						LOG.warn("Usuario intenta modificar producto sin permisos");
+						request.getSession().invalidate();
+						request.setAttribute("mensajeAlerta",
+								new Alerta(Alerta.TIPO_DANGER, "No puede modificar este producto"));
+						vistaSeleccionda = "/login.jsp";
+					}
 
 				} else { // crear
+					// evitar que se envie el parametro usuario id desde el formulario
+					HttpSession sesion = request.getSession();
+					uLogeado = (Usuario) sesion.getAttribute("usuarioLogeado");
+					pGuardar.setUsuario(uLogeado);
 					dao.create(pGuardar);
 					request.setAttribute("mensajeAlerta",
 							new Alerta(Alerta.TIPO_PRIMARY, " Producto guardado con éxito"));
+					request.setAttribute("usuarios", daoUsuario.getAll());
+					request.setAttribute("producto", pGuardar);
+					vistaSeleccionda = VIEW_FORM;
 				}
 
 			} catch (Exception e) { // validacion a nivel de base datos
-
+				LOG.fatal(e);
 				request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "Problema en la BBDD"));
+				request.setAttribute("usuarios", daoUsuario.getAll());
+				request.setAttribute("producto", pGuardar);
+				vistaSeleccionda = VIEW_FORM;
 			}
 
 		}
-
-		request.setAttribute("usuarios", daoUsuario.getAll());
-		request.setAttribute("producto", pGuardar);
-		vistaSeleccionda = VIEW_FORM;
 
 	}
 
@@ -212,15 +231,27 @@ public class ProductosController extends HttpServlet {
 
 		int id = Integer.parseInt(pId);
 		try {
-			Producto pEliminado = dao.delete(id);
-			request.setAttribute("mensajeAlerta",
-					new Alerta(Alerta.TIPO_PRIMARY, "Eliminado " + pEliminado.getNombre()));
+
+			Producto p = dao.getById(id);
+			if (verificarProductoUsuario(request, response, p)) {
+
+				Producto pEliminado = dao.delete(id);
+				request.setAttribute("mensajeAlerta",
+						new Alerta(Alerta.TIPO_PRIMARY, "Eliminado " + pEliminado.getNombre()));
+				listar(request, response);
+			} else {
+				LOG.warn("El usuario intenta eliminar un producto que no le corresponde");
+				request.getSession().invalidate();
+				request.setAttribute("mensajeAlerta",
+						new Alerta(Alerta.TIPO_DANGER, "No puede eliminar este producto"));
+				vistaSeleccionda = "/login.jsp";
+			}
+
 		} catch (Exception e) {
+			LOG.fatal(e);
 			request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "No se puede Eliminar el producto"));
 
 		}
-
-		listar(request, response);
 
 	}
 
@@ -233,4 +264,17 @@ public class ProductosController extends HttpServlet {
 
 	}
 
+	private boolean verificarProductoUsuario(HttpServletRequest request, HttpServletResponse response, Producto p) {
+
+		boolean verificado = false;
+
+		HttpSession sesion = request.getSession();
+		uLogeado = (Usuario) sesion.getAttribute("usuarioLogeado");
+
+		if (uLogeado.getId() == p.getUsuario().getId()) {
+			verificado = true;
+		}
+
+		return verificado;
+	}
 }

@@ -26,17 +26,14 @@ public class UsuarioDAO implements IUsuarioDAO {
 			+ " u.contrasenia," + " r.id as 'id_rol'," + " r.nombre as 'nombre_rol' " + " FROM usuario u, rol r"
 			+ " WHERE u.id_rol = r.id;";
 
-	// "SELECT id, nombre, contrasenia FROM usuario;";
-
 	private static final String SQL_GET_BY_ID = "SELECT u.id as 'id_usuario'," + " u.nombre as 'nombre_usuario',"
-			+ " u.contrasenia," + " r.id as 'id_rol'," + " r.nombre as 'nombre_rol' " + " FROM usuario u, rol "
-			+ " WHERE u.id_rol = r.id " + " AND id_usuario = ?; ";
-
-	// "SELECT id, nombre, contrasenia FROM usuario WHERE id = ? ;";
+			+ " u.contrasenia," + " r.id as 'id_rol'," + " r.nombre as 'nombre_rol' " + " FROM usuario u, rol r "
+			+ " WHERE u.id_rol = r.id " + " AND u.id = ?; ";
 
 	private static final String SQL_DELETE = "DELETE FROM usuario WHERE id = ? ;";
 
 	private static final String SQL_UPDATE = "UPDATE usuario SET nombre = ?, contrasenia = ? WHERE id = ? ;";
+
 	private static final String SQL_INSERT = "INSERT INTO usuario (nombre, contrasenia) VALUES (?, ?);";
 
 	private static UsuarioDAO INSTANCE;
@@ -62,6 +59,8 @@ public class UsuarioDAO implements IUsuarioDAO {
 				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL);
 				ResultSet rs = pst.executeQuery()) {
 
+			LOG.debug("PST: " + pst);
+
 			while (rs.next()) {
 
 				Usuario u = new Usuario();
@@ -80,7 +79,7 @@ public class UsuarioDAO implements IUsuarioDAO {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			LOG.error(e);
 		}
 
 		return lista;
@@ -96,6 +95,7 @@ public class UsuarioDAO implements IUsuarioDAO {
 
 			// sustituyo parametros en la SQL, en este caso 1º ? por id
 			pst.setInt(1, id);
+			LOG.debug("PST: " + pst);
 
 			// ejecuto la consulta
 			try (ResultSet rs = pst.executeQuery()) {
@@ -117,7 +117,7 @@ public class UsuarioDAO implements IUsuarioDAO {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			LOG.error(e);
 		}
 
 		return registro;
@@ -130,6 +130,8 @@ public class UsuarioDAO implements IUsuarioDAO {
 				PreparedStatement pst = con.prepareStatement(SQL_DELETE)) {
 
 			pst.setInt(1, id);
+
+			LOG.debug("PST: " + pst);
 
 			registro = this.getById(id); // recuperar
 
@@ -152,6 +154,8 @@ public class UsuarioDAO implements IUsuarioDAO {
 			pst.setString(2, pojo.getContrasenia());
 			pst.setInt(3, id);
 
+			LOG.debug("PST: " + pst);
+
 			int affectedRows = pst.executeUpdate(); // lanza una excepcion si nombre repetido
 			if (affectedRows == 1) {
 				pojo.setId(id);
@@ -171,6 +175,8 @@ public class UsuarioDAO implements IUsuarioDAO {
 
 			pst.setString(1, pojo.getNombre());
 			pst.setString(2, pojo.getContrasenia());
+
+			LOG.debug("PST: " + pst);
 
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 1) {
@@ -196,7 +202,8 @@ public class UsuarioDAO implements IUsuarioDAO {
 
 			pst.setString(1, nombre);
 			pst.setString(2, contrasenia);
-			LOG.debug(pst);
+
+			LOG.debug("PST: " + pst);
 
 			try (ResultSet rs = pst.executeQuery()) {
 

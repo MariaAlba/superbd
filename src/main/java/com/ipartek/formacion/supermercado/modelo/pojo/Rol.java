@@ -31,3 +31,12 @@ public class Rol {
 	}
 
 }
+
+/*
+ * un usuario administrador tiene permisos totales y cuando accede al backoffice
+ * (seguridad) puede editar cualquier producto y cualquier usuario
+ * 
+ * un usuario normal cuando se logea accede añ frontoffice (mipanel) el usuario
+ * logeado desde su panel solo puede hacer crud de sus productos y solo podría
+ * cambiar su contraseña de su perfil
+ */

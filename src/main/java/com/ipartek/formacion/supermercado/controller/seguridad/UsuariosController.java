@@ -14,6 +14,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.apache.log4j.Logger;
+
 import com.ipartek.formacion.supermercado.modelo.dao.UsuarioDAO;
 import com.ipartek.formacion.supermercado.modelo.pojo.Alerta;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
@@ -23,6 +25,8 @@ import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
  */
 @WebServlet("/seguridad/usuarios")
 public class UsuariosController extends HttpServlet {
+
+	private final static Logger LOG = Logger.getLogger(UsuariosController.class);
 
 	private static final long serialVersionUID = 1L;
 
@@ -111,7 +115,7 @@ public class UsuariosController extends HttpServlet {
 			}
 
 		} catch (Exception e) {
-			// TODO log
+			LOG.error(e);
 			e.printStackTrace();
 
 		} finally {
@@ -155,13 +159,17 @@ public class UsuariosController extends HttpServlet {
 				if (id > 0) { // modificar
 
 					dao.update(id, uGuardar);
+					request.setAttribute("mensajeAlerta",
+							new Alerta(Alerta.TIPO_PRIMARY, "Usuario " + uGuardar + " modificado con éxito "));
 
 				} else { // crear
 					dao.create(uGuardar);
+					request.setAttribute("mensajeAlerta",
+							new Alerta(Alerta.TIPO_PRIMARY, "Nuevo usuario " + uGuardar + " creado con éxito "));
 				}
 
 			} catch (Exception e) { // validacion a nivel de base datos
-
+				LOG.fatal(e);
 				request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "Problema en la BBDD"));
 			}
 

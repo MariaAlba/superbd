@@ -27,8 +27,7 @@ public class ConnectionManager {
 			conn = ds.getConnection();
 
 		} catch (Exception e) {
-
-			e.printStackTrace();
+			LOG.fatal(e);
 		}
 
 		return conn;

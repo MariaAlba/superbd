@@ -17,7 +17,7 @@
 				<th>Descripción</th>
 				<th>Precio</th>
 				<th>Descuento</th>
-				<th>Usuario</th>
+				
 				<th>Editar</th>
 			</tr>
 		</thead>
@@ -32,7 +32,7 @@
 		value="${p.precio}" /></td>
 					<td>${p.descuento}%
 					</td>
-					<td>${p.usuario.nombre }</td>
+					
 					<td><a href="mipanel/productos?accion=formulario&id=${p.id}">Editar</a></td>
 				</tr>
 			</c:forEach>

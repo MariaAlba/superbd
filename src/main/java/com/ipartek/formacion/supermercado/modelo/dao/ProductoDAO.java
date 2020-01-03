@@ -16,8 +16,9 @@ import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
 public class ProductoDAO implements IDAO<Producto> {
 
-	private static ProductoDAO INSTANCE;
 	private final static Logger LOG = Logger.getLogger(ProductoDAO.class);
+
+	private static ProductoDAO INSTANCE;
 
 	private static final String SQL_GET_ALL = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
 			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
@@ -63,16 +64,14 @@ public class ProductoDAO implements IDAO<Producto> {
 				PreparedStatement pst = con.prepareStatement(SQL_GET_ALL);
 				ResultSet rs = pst.executeQuery()) {
 
-			LOG.debug("prepared statement: " + rs);
+			LOG.debug("PST: " + pst);
+
 			while (rs.next()) {
-
 				lista.add(mapper(rs));
-
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
-			LOG.error("Excepcion: " + e);
+			LOG.error("EXCEPCION " + e);
 		}
 
 		return lista;
@@ -88,19 +87,16 @@ public class ProductoDAO implements IDAO<Producto> {
 			// sustituyo parametros en la SQL, en este caso 1º ? por id
 			pst.setInt(1, usuarioId);
 
+			LOG.debug("PST: " + pst);
+
 			ResultSet rs = pst.executeQuery();
 
 			while (rs.next()) {
-
 				lista.add(mapper(rs));
-
 			}
 
-		} catch (
-
-		SQLException e) {
-			e.printStackTrace();
-			LOG.error("excepcion " + e);
+		} catch (SQLException e) {
+			LOG.error("EXCEPCION: " + e);
 		}
 
 		return lista;
@@ -117,18 +113,18 @@ public class ProductoDAO implements IDAO<Producto> {
 			// sustituyo parametros en la SQL, en este caso 1º ? por id
 			pst.setInt(1, id);
 
+			LOG.debug("PST: " + pst);
+
 			// ejecuto la consulta
 			try (ResultSet rs = pst.executeQuery()) {
 
 				while (rs.next()) {
-
 					registro = mapper(rs);
-
 				}
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			LOG.error("EXCEPCION: " + e);
 		}
 
 		return registro;
@@ -143,6 +139,8 @@ public class ProductoDAO implements IDAO<Producto> {
 
 			pst.setInt(1, id);
 
+			LOG.debug("PST: " + pst);
+
 			registro = this.getById(id); // recuperar
 
 			int affectedRows = pst.executeUpdate(); // eliminar
@@ -151,6 +149,8 @@ public class ProductoDAO implements IDAO<Producto> {
 				throw new Exception("No se puede eliminar " + registro);
 			}
 
+		} catch (SQLException e) {
+			LOG.error("EXCEPCION: " + e);
 		}
 		return registro;
 	}
@@ -168,6 +168,8 @@ public class ProductoDAO implements IDAO<Producto> {
 			pst.setInt(5, pojo.getDescuento());
 			pst.setInt(6, pojo.getUsuario().getId());
 			pst.setInt(7, id);
+
+			LOG.debug("PST: " + pst);
 
 			int affectedRows = pst.executeUpdate(); // lanza una excepcion si nombre repetido
 			if (affectedRows == 1) {
@@ -192,6 +194,8 @@ public class ProductoDAO implements IDAO<Producto> {
 			pst.setFloat(4, pojo.getPrecio());
 			pst.setInt(5, pojo.getDescuento());
 			pst.setInt(6, pojo.getUsuario().getId());
+
+			LOG.debug("PST: " + pst);
 
 			int affectedRows = pst.executeUpdate();
 			if (affectedRows == 1) {
