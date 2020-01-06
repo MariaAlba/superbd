@@ -1,8 +1,10 @@
+CREATE DATABASE  IF NOT EXISTS `supermercado` /*!40100 DEFAULT CHARACTER SET utf8 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `supermercado`;
 -- MySQL dump 10.13  Distrib 8.0.18, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supermercado
 -- ------------------------------------------------------
--- Server version	8.0.16
+-- Server version	8.0.18
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,35 +18,28 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `producto`
+-- Table structure for table `categoria`
 --
 
-DROP TABLE IF EXISTS `producto`;
+DROP TABLE IF EXISTS `categoria`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `producto` (
+CREATE TABLE `categoria` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(50) NOT NULL,
-  `descripcion` varchar(150) NOT NULL DEFAULT 'nombre',
-  `imagen` varchar(150) NOT NULL DEFAULT 'https://image.flaticon.com/icons/png/512/372/372627.png',
-  `precio` float NOT NULL DEFAULT '0',
-  `descuento` int(11) NOT NULL DEFAULT '0',
-  `id_usuario` int(11) NOT NULL,
+  `nombre` varchar(150) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nombre` (`nombre`),
-  KEY `FK_usuario` (`id_usuario`),
-  CONSTRAINT `FK_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `nombre_UNIQUE` (`nombre`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `producto`
+-- Dumping data for table `categoria`
 --
 
-LOCK TABLES `producto` WRITE;
-/*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (8,'donetes nuevos','donetes','https://image.flaticon.com/icons/png/512/372/372627.png',5,2,1),(10,'galletas3','nombre','https://image.flaticon.com/icons/png/512/372/372627.png',0,0,1),(17,'donetes rallados','nombre','https://image.flaticon.com/icons/png/512/372/372627.png',0,0,4),(18,'galletitas saladitas','galletas','https://image.flaticon.com/icons/png/512/372/372627.png',12,5,4),(19,'arena gato','higiene gatos','https://image.flaticon.com/icons/png/512/372/372627.png',3.75,2,1),(20,'Java revisited','libro','https://image.flaticon.com/icons/png/512/372/372627.png',55,10,6),(22,'flores secas','decoracion','https://image.flaticon.com/icons/png/512/372/372627.png',7.5,3,1),(23,'comida peces','alimentacion','https://image.flaticon.com/icons/png/512/372/372627.png',5,1,1);
-/*!40000 ALTER TABLE `producto` ENABLE KEYS */;
+LOCK TABLES `categoria` WRITE;
+/*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
+INSERT INTO `categoria` VALUES (1,'general');
+/*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -61,6 +56,8 @@ CREATE TABLE `rol` (
   UNIQUE KEY `nombre_UNIQUE` (`nombre`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+
 
 --
 -- Dumping data for table `rol`
@@ -110,4 +107,42 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-01-02 11:21:43
+-- Dump completed on 2020-01-06 19:52:11
+--
+-- Table structure for table `producto`
+--
+
+DROP TABLE IF EXISTS `producto`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `producto` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(50) NOT NULL,
+  `descripcion` varchar(150) NOT NULL DEFAULT 'nombre',
+  `imagen` varchar(150) NOT NULL DEFAULT 'https://image.flaticon.com/icons/png/512/372/372627.png',
+  `precio` float NOT NULL DEFAULT '0',
+  `descuento` int(11) NOT NULL DEFAULT '0',
+  `id_usuario` int(11) NOT NULL,
+  `id_categoria` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre` (`nombre`),
+  KEY `FK_usuario` (`id_usuario`),
+  KEY `FK_categoria_idx` (`id_categoria`),
+  CONSTRAINT `FK_categoria` FOREIGN KEY (`id_categoria`) REFERENCES `categoria` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `FK_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `producto`
+--
+
+LOCK TABLES `producto` WRITE;
+/*!40000 ALTER TABLE `producto` DISABLE KEYS */;
+INSERT INTO `producto` VALUES (8,'donetes nuevos','donetes','https://image.flaticon.com/icons/png/512/372/372627.png',5,2,1,1),(10,'galletas3','nombre','https://image.flaticon.com/icons/png/512/372/372627.png',0,0,1,1),(17,'donetes rallados','nombre','https://image.flaticon.com/icons/png/512/372/372627.png',0,0,4,1),(18,'galletitas saladitas','galletas','https://image.flaticon.com/icons/png/512/372/372627.png',12,5,4,1),(19,'arena gato','higiene gatos','https://image.flaticon.com/icons/png/512/372/372627.png',3.75,2,1,1),(20,'Java revisited','libro','https://image.flaticon.com/icons/png/512/372/372627.png',55,10,6,1),(22,'flores secas','decoracion','https://image.flaticon.com/icons/png/512/372/372627.png',7.5,3,1,1),(23,'comida peces','alimentacion','https://image.flaticon.com/icons/png/512/372/372627.png',5,1,1,1);
+/*!40000 ALTER TABLE `producto` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+
+
