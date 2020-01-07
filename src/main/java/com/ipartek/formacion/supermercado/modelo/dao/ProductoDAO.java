@@ -14,7 +14,7 @@ import com.ipartek.formacion.supermercado.model.ConnectionManager;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
-public class ProductoDAO implements IDAO<Producto> {
+public class ProductoDAO implements IProductoDAO {
 
 	private final static Logger LOG = Logger.getLogger(ProductoDAO.class);
 
@@ -33,7 +33,7 @@ public class ProductoDAO implements IDAO<Producto> {
 			+ "VALUES ( ?, ?, ?, ?, ?, ?);";
 
 	private static final String SQL_GET_UPDATE = "UPDATE producto SET " + " nombre = ?, " + " descripcion = ?, "
-			+ " imagen = ?, " + " precio = ?, " + " descuento = ?, " + " id_usuario = ? " + " WHERE (id = ?);";
+			+ " imagen = ?, " + " precio = ?, " + " descuento = ?, " + " id_usuario = ? " + " WHERE (id = ? );";
 
 	private static final String SQL_DELETE = "DELETE FROM producto WHERE id = ? ;";
 
@@ -41,6 +41,17 @@ public class ProductoDAO implements IDAO<Producto> {
 			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
 			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " WHERE p.id_usuario = ? "
 			+ " ORDER BY p.nombre ASC LIMIT 500;";
+
+	private static final String SQL_GET_BY_ID_BY_USER = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
+			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
+			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " WHERE p.id_usuario = ? AND p.id = ?"
+			+ " ORDER BY p.nombre ASC LIMIT 500;";
+
+	private static final String SQL_GET_UPDATE_BY_USER = "UPDATE producto SET " + " nombre = ?, " + " descripcion = ?, "
+			+ " imagen = ?, " + " precio = ?, " + " descuento = ?, " + " id_usuario = ? "
+			+ " WHERE id = ? AND id_usuario = ?;";
+
+	private static final String SQL_DELETE_BY_USER = "DELETE FROM producto WHERE id = ? AND id_usuario = ?;";
 
 	private ProductoDAO() {
 		super();
@@ -77,6 +88,7 @@ public class ProductoDAO implements IDAO<Producto> {
 		return lista;
 	}
 
+	@Override
 	public List<Producto> getAllByUser(int usuarioId) {
 
 		ArrayList<Producto> lista = new ArrayList<Producto>();
@@ -131,6 +143,36 @@ public class ProductoDAO implements IDAO<Producto> {
 	}
 
 	@Override
+	public Producto getByIdByUser(int idProducto, int idUsuario) throws ProductoException {
+		Producto registro = null;
+
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_BY_ID_BY_USER);) {
+
+			// sustituyo parametros en la SQL, en este caso 1º ? por id
+			pst.setInt(1, idUsuario);
+			pst.setInt(2, idProducto);
+
+			LOG.debug("PST: " + pst);
+
+			// ejecuto la consulta
+			try (ResultSet rs = pst.executeQuery()) {
+
+				while (rs.next()) {
+					registro = mapper(rs);
+				}
+			}
+		} catch (SQLException e) {
+			LOG.error("EXCEPCION: " + e);
+		}
+
+		if (registro == null) {
+			throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
+		}
+		return registro;
+	}
+
+	@Override
 	public Producto delete(int id) throws Exception {
 
 		Producto registro = null;
@@ -156,6 +198,34 @@ public class ProductoDAO implements IDAO<Producto> {
 	}
 
 	@Override
+	public Producto deleteByUser(int idProducto, int idUsuario) throws ProductoException {
+		Producto registro = null;
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_DELETE_BY_USER)) {
+
+			pst.setInt(1, idProducto);
+			pst.setInt(2, idUsuario);
+
+			LOG.debug("PST: " + pst);
+
+			registro = this.getById(idProducto); // recuperar
+
+			int affectedRows = pst.executeUpdate(); // eliminar
+			if (affectedRows != 1) {
+				registro = null;
+				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
+			}
+
+		} catch (SQLException e) {
+			LOG.error("EXCEPCION: " + e);
+		} catch (ProductoException e) {
+			LOG.error("EXCEPCION: " + e);
+		}
+		return registro;
+
+	}
+
+	@Override
 	public Producto update(int id, Producto pojo) throws Exception {
 
 		try (Connection con = ConnectionManager.getConnection();
@@ -178,6 +248,39 @@ public class ProductoDAO implements IDAO<Producto> {
 				throw new Exception("No se encontro registro para id=" + id);
 			}
 
+		}
+		return pojo;
+	}
+
+	@Override
+	public Producto updateByUser(int idProducto, int idUsuario, Producto pojo) throws ProductoException {
+		try (Connection con = ConnectionManager.getConnection();
+				PreparedStatement pst = con.prepareStatement(SQL_GET_UPDATE_BY_USER)) {
+
+			pst.setString(1, pojo.getNombre());
+			pst.setString(2, pojo.getDescripcion());
+			pst.setString(3, pojo.getImagen());
+			pst.setFloat(4, pojo.getPrecio());
+			pst.setInt(5, pojo.getDescuento());
+			pst.setInt(6, pojo.getUsuario().getId());
+			pst.setInt(7, idProducto);
+			pst.setInt(8, idUsuario);
+
+			LOG.debug("PST: " + pst);
+
+			int affectedRows = pst.executeUpdate(); // lanza una excepcion si nombre repetido
+			if (affectedRows == 1) {
+				pojo.setId(idProducto);
+
+			} else if (affectedRows == 0) {
+				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
+			} else {
+				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
+			}
+
+		} catch (SQLException e) {
+			LOG.warn(e);
+			e.printStackTrace();
 		}
 		return pojo;
 	}
@@ -236,4 +339,5 @@ public class ProductoDAO implements IDAO<Producto> {
 		p.setUsuario(u);
 		return p;
 	}
+
 }

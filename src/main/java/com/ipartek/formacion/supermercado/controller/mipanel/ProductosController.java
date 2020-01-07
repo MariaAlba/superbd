@@ -18,6 +18,7 @@ import javax.validation.ValidatorFactory;
 import org.apache.log4j.Logger;
 
 import com.ipartek.formacion.supermercado.modelo.dao.ProductoDAO;
+import com.ipartek.formacion.supermercado.modelo.dao.ProductoException;
 import com.ipartek.formacion.supermercado.modelo.dao.UsuarioDAO;
 import com.ipartek.formacion.supermercado.modelo.pojo.Alerta;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
@@ -132,19 +133,37 @@ public class ProductosController extends HttpServlet {
 
 	}
 
+	private void listar(HttpServletRequest request, HttpServletResponse response) {
+		Usuario usuario = new Usuario();
+		HttpSession session = request.getSession();
+		usuario = (Usuario) session.getAttribute("usuarioLogeado");
+		request.setAttribute("productos", dao.getAllByUser(usuario.getId()));
+		vistaSeleccionda = VIEW_TABLA;
+
+	}
+
 	private void irFormulario(HttpServletRequest request, HttpServletResponse response) {
 
 		Producto pEditar = new Producto();
+		HttpSession sesion = request.getSession();
+		uLogeado = (Usuario) sesion.getAttribute("usuarioLogeado");
 
 		if (pId != null) {
 
 			int id = Integer.parseInt(pId);
-			pEditar = dao.getById(id);
-
+			// pEditar = dao.getById(id);
+			try {
+				pEditar = dao.getByIdByUser(id, uLogeado.getId());
+				LOG.debug(pEditar);
+			} catch (ProductoException e) {
+				LOG.warn(e);
+				request.setAttribute("mensajeAlerta",
+						new Alerta(Alerta.TIPO_DANGER, ProductoException.EXCEPTION_UNAUTHORIZED));
+			}
 		}
 
-		request.setAttribute("usuarios", daoUsuario.getAll());
 		request.setAttribute("producto", pEditar);
+		request.setAttribute("usuarios", daoUsuario.getAll());
 		vistaSeleccionda = VIEW_FORM;
 
 	}
@@ -153,60 +172,80 @@ public class ProductosController extends HttpServlet {
 
 		int id = Integer.parseInt(pId);
 
-		Producto pGuardar = new Producto();
-		pGuardar.setId(id);
-		pGuardar.setNombre(pNombre);
-		pGuardar.setDescripcion(pDescripcion);
-		pGuardar.setImagen(pImagen);
-		pGuardar.setPrecio(Float.parseFloat(pPrecio));
-		pGuardar.setDescuento(Integer.parseInt(pDescuento));
+		HttpSession sesion = request.getSession();
+		uLogeado = (Usuario) sesion.getAttribute("usuarioLogeado");
 
-		Set<ConstraintViolation<Producto>> validaciones = validator.validate(pGuardar);
-		if (validaciones.size() > 0) {
-			mensajeValidacion(request, validaciones);
-		} else {
+		Producto pGuardar;
+		try {
+			pGuardar = dao.getByIdByUser(id, uLogeado.getId());
 
-			try {
+//			if (pGuardar == null) {
+//				request.setAttribute("mensajeAlerta",
+//						new Alerta(Alerta.TIPO_DANGER, ProductoException.EXCEPTION_UNAUTHORIZED));
+//				request.setAttribute("usuarios", daoUsuario.getAll());
+//				request.setAttribute("producto", pGuardar);
+//				vistaSeleccionda = VIEW_FORM;
+//
+//			} else {
+			Set<ConstraintViolation<Producto>> validaciones = validator.validate(pGuardar);
+			if (validaciones.size() > 0) {
+				mensajeValidacion(request, validaciones);
+			} else {
 
-				if (id > 0) { // modificar
+				try {
 
-					if (verificarProductoUsuario(request, response, pGuardar)) {
+					if (id > 0) { // modificar
 
-						dao.update(id, pGuardar);
+						if (verificarProductoUsuario(request, response, pGuardar)) {
+
+							dao.updateByUser(id, uLogeado.getId(), pGuardar);
+							request.setAttribute("mensajeAlerta",
+									new Alerta(Alerta.TIPO_PRIMARY, " Producto modificado con éxito"));
+							request.setAttribute("usuarios", daoUsuario.getAll());
+							request.setAttribute("producto", pGuardar);
+							vistaSeleccionda = VIEW_FORM;
+						} else {
+							LOG.warn("Usuario intenta modificar producto sin permisos");
+							request.getSession().invalidate();
+							request.setAttribute("mensajeAlerta",
+									new Alerta(Alerta.TIPO_DANGER, "No puede modificar este producto"));
+							vistaSeleccionda = "/login.jsp";
+						}
+
+					} else { // crear
+						// evitar que se envie el parametro usuario id desde el formulario
+						pGuardar.setId(id);
+						pGuardar.setNombre(pNombre);
+						pGuardar.setDescripcion(pDescripcion);
+						pGuardar.setImagen(pImagen);
+						pGuardar.setPrecio(Float.parseFloat(pPrecio));
+						pGuardar.setDescuento(Integer.parseInt(pDescuento));
+						pGuardar.setUsuario(uLogeado);
+						dao.create(pGuardar);
 						request.setAttribute("mensajeAlerta",
-								new Alerta(Alerta.TIPO_PRIMARY, " Producto modificado con éxito"));
+								new Alerta(Alerta.TIPO_PRIMARY, " Producto guardado con éxito"));
 						request.setAttribute("usuarios", daoUsuario.getAll());
 						request.setAttribute("producto", pGuardar);
 						vistaSeleccionda = VIEW_FORM;
-					} else {
-						LOG.warn("Usuario intenta modificar producto sin permisos");
-						request.getSession().invalidate();
-						request.setAttribute("mensajeAlerta",
-								new Alerta(Alerta.TIPO_DANGER, "No puede modificar este producto"));
-						vistaSeleccionda = "/login.jsp";
 					}
-
-				} else { // crear
-					// evitar que se envie el parametro usuario id desde el formulario
-					HttpSession sesion = request.getSession();
-					uLogeado = (Usuario) sesion.getAttribute("usuarioLogeado");
-					pGuardar.setUsuario(uLogeado);
-					dao.create(pGuardar);
-					request.setAttribute("mensajeAlerta",
-							new Alerta(Alerta.TIPO_PRIMARY, " Producto guardado con éxito"));
+				} catch (Exception e) { // validacion a nivel de base datos
+					LOG.fatal(e);
+					request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "Problema en la BBDD"));
 					request.setAttribute("usuarios", daoUsuario.getAll());
 					request.setAttribute("producto", pGuardar);
 					vistaSeleccionda = VIEW_FORM;
 				}
 
-			} catch (Exception e) { // validacion a nivel de base datos
-				LOG.fatal(e);
-				request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "Problema en la BBDD"));
-				request.setAttribute("usuarios", daoUsuario.getAll());
-				request.setAttribute("producto", pGuardar);
-				vistaSeleccionda = VIEW_FORM;
 			}
+			// }
 
+		} catch (ProductoException e1) {
+			LOG.error(e1);
+			request.setAttribute("mensajeAlerta",
+					new Alerta(Alerta.TIPO_DANGER, ProductoException.EXCEPTION_UNAUTHORIZED));
+			request.setAttribute("usuarios", daoUsuario.getAll());
+			request.setAttribute("producto", new Producto());
+			vistaSeleccionda = VIEW_FORM;
 		}
 
 	}
@@ -229,13 +268,16 @@ public class ProductosController extends HttpServlet {
 
 	private void eliminar(HttpServletRequest request, HttpServletResponse response) {
 
+		HttpSession sesion = request.getSession();
+		uLogeado = (Usuario) sesion.getAttribute("usuarioLogeado");
+
 		int id = Integer.parseInt(pId);
 		try {
 
 			Producto p = dao.getById(id);
 			if (verificarProductoUsuario(request, response, p)) {
 
-				Producto pEliminado = dao.delete(id);
+				Producto pEliminado = dao.deleteByUser(id, uLogeado.getId());
 				request.setAttribute("mensajeAlerta",
 						new Alerta(Alerta.TIPO_PRIMARY, "Eliminado " + pEliminado.getNombre()));
 				listar(request, response);
@@ -247,20 +289,14 @@ public class ProductosController extends HttpServlet {
 				vistaSeleccionda = "/login.jsp";
 			}
 
+		} catch (ProductoException e) {
+			request.setAttribute("mensajeAlerta",
+					new Alerta(Alerta.TIPO_DANGER, ProductoException.EXCEPTION_UNAUTHORIZED));
 		} catch (Exception e) {
 			LOG.fatal(e);
 			request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_DANGER, "No se puede Eliminar el producto"));
 
 		}
-
-	}
-
-	private void listar(HttpServletRequest request, HttpServletResponse response) {
-		Usuario usuario = new Usuario();
-		HttpSession session = request.getSession();
-		usuario = (Usuario) session.getAttribute("usuarioLogeado");
-		request.setAttribute("productos", dao.getAllByUser(usuario.getId()));
-		vistaSeleccionda = VIEW_TABLA;
 
 	}
 
