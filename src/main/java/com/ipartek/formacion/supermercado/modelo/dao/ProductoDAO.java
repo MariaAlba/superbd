@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.ipartek.formacion.supermercado.model.ConnectionManager;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
 public class ProductoDAO implements IProductoDAO {
 
@@ -143,33 +144,31 @@ public class ProductoDAO implements IProductoDAO {
 	}
 
 	@Override
-	public Producto getByIdByUser(int idProducto, int idUsuario) throws ProductoException {
-		Producto registro = null;
+	public Producto getByIdByUser(int idProducto, int idUsuario) throws SQLException, ProductoException {
+		Producto p = null;
 
 		try (Connection con = ConnectionManager.getConnection();
 				PreparedStatement pst = con.prepareStatement(SQL_GET_BY_ID_BY_USER);) {
 
 			// sustituyo parametros en la SQL, en este caso 1º ? por id
-			pst.setInt(1, idUsuario);
-			pst.setInt(2, idProducto);
+			pst.setInt(1, idProducto);
+			pst.setInt(2, idUsuario);
 
-			LOG.debug("PST: " + pst);
-
+			LOG.debug(pst);
 			// ejecuto la consulta
 			try (ResultSet rs = pst.executeQuery()) {
 
-				while (rs.next()) {
-					registro = mapper(rs);
+				if (rs.next()) {
+					p = mapper(rs);
+				} else {
+					LOG.warn("No se encuentra producto");
+					throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
 				}
-			}
-		} catch (SQLException e) {
-			LOG.error("EXCEPCION: " + e);
-		}
+			} // try 2
 
-		if (registro == null) {
-			throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
-		}
-		return registro;
+		} // try1
+
+		return p;
 	}
 
 	@Override
@@ -198,7 +197,8 @@ public class ProductoDAO implements IProductoDAO {
 	}
 
 	@Override
-	public Producto deleteByUser(int idProducto, int idUsuario) throws ProductoException {
+	public Producto deleteByUser(int idProducto, int idUsuario) throws SQLException, ProductoException {
+
 		Producto registro = null;
 		try (Connection con = ConnectionManager.getConnection();
 				PreparedStatement pst = con.prepareStatement(SQL_DELETE_BY_USER)) {
@@ -206,23 +206,23 @@ public class ProductoDAO implements IProductoDAO {
 			pst.setInt(1, idProducto);
 			pst.setInt(2, idUsuario);
 
-			LOG.debug("PST: " + pst);
-
 			registro = this.getById(idProducto); // recuperar
 
+			LOG.debug(pst);
+
 			int affectedRows = pst.executeUpdate(); // eliminar
-			if (affectedRows != 1) {
-				registro = null;
+			if (affectedRows == 1) {
+				LOG.debug("registro eliminado");
+
+			} else {
+
+				LOG.warn("No te pertenece producto al usuario");
 				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
+
 			}
 
-		} catch (SQLException e) {
-			LOG.error("EXCEPCION: " + e);
-		} catch (ProductoException e) {
-			LOG.error("EXCEPCION: " + e);
 		}
 		return registro;
-
 	}
 
 	@Override
@@ -253,34 +253,29 @@ public class ProductoDAO implements IProductoDAO {
 	}
 
 	@Override
-	public Producto updateByUser(int idProducto, int idUsuario, Producto pojo) throws ProductoException {
+	public Producto updateByUser(int idProducto, int idUsuario, Producto pojo) throws SQLException, ProductoException {
 		try (Connection con = ConnectionManager.getConnection();
 				PreparedStatement pst = con.prepareStatement(SQL_GET_UPDATE_BY_USER)) {
 
 			pst.setString(1, pojo.getNombre());
-			pst.setString(2, pojo.getDescripcion());
-			pst.setString(3, pojo.getImagen());
-			pst.setFloat(4, pojo.getPrecio());
-			pst.setInt(5, pojo.getDescuento());
-			pst.setInt(6, pojo.getUsuario().getId());
-			pst.setInt(7, idProducto);
-			pst.setInt(8, idUsuario);
+			pst.setInt(2, pojo.getUsuario().getId());
+			pst.setInt(3, idProducto);
+			pst.setInt(4, idUsuario);
 
-			LOG.debug("PST: " + pst);
+			LOG.debug(pst);
 
 			int affectedRows = pst.executeUpdate(); // lanza una excepcion si nombre repetido
 			if (affectedRows == 1) {
+				LOG.debug("producto modificado");
 				pojo.setId(idProducto);
-
-			} else if (affectedRows == 0) {
-				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
 			} else {
+				LOG.warn("No le pertence el producto");
 				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
 			}
+		} catch (MySQLIntegrityConstraintViolationException e) {
 
-		} catch (SQLException e) {
-			LOG.warn(e);
-			e.printStackTrace();
+			LOG.debug("ya existe el nombre del producto");
+			throw e;
 		}
 		return pojo;
 	}
