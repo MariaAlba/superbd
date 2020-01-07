@@ -14,7 +14,7 @@ import com.ipartek.formacion.supermercado.model.ConnectionManager;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
-public class ProductoDAO implements IDAO<Producto> {
+public class ProductoDAO implements IProductoDAO {
 
 	private final static Logger LOG = Logger.getLogger(ProductoDAO.class);
 

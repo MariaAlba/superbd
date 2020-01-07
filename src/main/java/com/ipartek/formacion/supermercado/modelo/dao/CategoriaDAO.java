@@ -8,17 +8,14 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.ipartek.formacion.supermercado.modelo.pojo.Categoria;
-import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
-import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
-public class CategoriaDAO implements IDAO<Categoria>{
-	
+public class CategoriaDAO implements ICategoriaDAO {
+
 	private final static Logger LOG = Logger.getLogger(CategoriaDAO.class);
-	
-	private final static String SQL_GET_ALL= "SELECT id, nombre FROM categoria;";
 
-	
-	//Singleton pattern
+	private final static String SQL_GET_ALL = "SELECT id, nombre FROM categoria;";
+
+	// Singleton pattern
 	private static CategoriaDAO INSTANCE;
 
 	private CategoriaDAO() {
@@ -33,37 +30,35 @@ public class CategoriaDAO implements IDAO<Categoria>{
 
 		return INSTANCE;
 	}
-	
+
 	@Override
 	public List<Categoria> getAll() {
 		ArrayList<Categoria> categorias = new ArrayList<Categoria>();
-		
-		
-		
+
 		return categorias;
 	}
 
 	@Override
 	public Categoria getById(int id) {
-		
+
 		return null;
 	}
 
 	@Override
 	public Categoria delete(int id) throws Exception {
-		
+
 		return null;
 	}
 
 	@Override
 	public Categoria update(int id, Categoria pojo) throws Exception {
-		
+
 		return null;
 	}
 
 	@Override
 	public Categoria create(Categoria pojo) throws Exception {
-		
+
 		return null;
 	}
 
