@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.ipartek.formacion.supermercado.model.ConnectionManager;
+import com.ipartek.formacion.supermercado.modelo.pojo.Categoria;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
 
@@ -20,13 +21,19 @@ public class ProductoDAO implements IProductoDAO {
 
 	private static ProductoDAO INSTANCE;
 
-	private static final String SQL_GET_ALL = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
-			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
-			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " ORDER BY p.nombre ASC LIMIT 500;";
+	private static final String SQL_GET_ALL = "SELECT \r\n" + "p.id as id_producto, \r\n"
+			+ "p.nombre as nombre_producto, \r\n" + "p.descripcion, \r\n" + "p.imagen, \r\n" + "p.precio, \r\n"
+			+ "p.descuento, \r\n" + "u.id as id_usuario,   \r\n" + "u.nombre as nombre_usuario, \r\n"
+			+ "c.id as id_categoria,\r\n" + "c.nombre as nombre_categoria\r\n" + "FROM producto  AS p  \r\n"
+			+ "INNER JOIN usuario AS u ON p.id_usuario = u.id  \r\n"
+			+ "INNER JOIN categoria AS c ON p.id_categoria = c.id\r\n" + "ORDER BY p.nombre ASC LIMIT 500;";
 
-	private static final String SQL_GET_BY_ID = "SELECT p.id as id_producto, p.nombre as nombre_producto,"
-			+ " p.descripcion, p.imagen, p.precio, p.descuento, u.nombre as nombre_usuario, u.id as id_usuario "
-			+ " FROM producto  AS p " + "	INNER JOIN usuario AS u ON p.id_usuario = u.id"
+	private static final String SQL_GET_BY_ID = "SELECT \r\n" + "p.id as id_producto, \r\n"
+			+ "p.nombre as nombre_producto, \r\n" + "p.descripcion, \r\n" + "p.imagen, \r\n" + "p.precio, \r\n"
+			+ "p.descuento, \r\n" + "u.id as id_usuario,   \r\n" + "u.nombre as nombre_usuario, \r\n"
+			+ "c.id as id_categoria,\r\n" + "c.nombre as nombre_categoria\r\n" + "FROM producto  AS p  \r\n"
+			+ "INNER JOIN usuario AS u ON p.id_usuario = u.id  \r\n"
+			+ "INNER JOIN categoria AS c ON p.id_categoria = c.id\r\n"
 			+ " WHERE p.id = ? ORDER BY p.nombre ASC LIMIT 500;";
 
 	private static final String SQL_GET_INSERT = "INSERT INTO producto (nombre, descripcion, imagen, precio, descuento, id_usuario) "
@@ -37,16 +44,21 @@ public class ProductoDAO implements IProductoDAO {
 
 	private static final String SQL_DELETE = "DELETE FROM producto WHERE id = ? ;";
 
-	private static final String SQL_GET_ALL_BY_USER = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
-			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
-			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " WHERE p.id_usuario = ? "
+	private static final String SQL_GET_ALL_BY_USER = "SELECT \r\n" + "p.id as id_producto, \r\n"
+			+ "p.nombre as nombre_producto, \r\n" + "p.descripcion, \r\n" + "p.imagen, \r\n" + "p.precio, \r\n"
+			+ "p.descuento, \r\n" + "u.id as id_usuario,   \r\n" + "u.nombre as nombre_usuario, \r\n"
+			+ "c.id as id_categoria,\r\n" + "c.nombre as nombre_categoria\r\n" + "FROM producto  AS p  \r\n"
+			+ "INNER JOIN usuario AS u ON p.id_usuario = u.id  \r\n"
+			+ "INNER JOIN categoria AS c ON p.id_categoria = c.id\r\n" + " WHERE p.id_usuario = ? "
 			+ " ORDER BY p.nombre ASC LIMIT 500;";
 
-	private static final String SQL_GET_BY_ID_BY_USER = " SELECT p.id as id_producto, \r\n"
-			+ "p.nombre as nombre_producto, \r\n" + "p.descripcion, p.imagen, \r\n" + "p.precio, p.descuento,  \r\n"
-			+ "u.nombre as nombre_usuario, \r\n" + "u.id as id_usuario\r\n"
-			+ "FROM producto  AS p  INNER JOIN usuario AS u \r\n"
-			+ "ON p.id_usuario = u.id  WHERE p.id = ? AND id_usuario = ?  ORDER BY p.nombre ASC LIMIT 500;";
+	private static final String SQL_GET_BY_ID_BY_USER = "SELECT \r\n" + "p.id as id_producto, \r\n"
+			+ "p.nombre as nombre_producto, \r\n" + "p.descripcion, \r\n" + "p.imagen, \r\n" + "p.precio, \r\n"
+			+ "p.descuento, \r\n" + "u.id as id_usuario,   \r\n" + "u.nombre as nombre_usuario, \r\n"
+			+ "c.id as id_categoria,\r\n" + "c.nombre as nombre_categoria\r\n" + "FROM producto  AS p  \r\n"
+			+ "INNER JOIN usuario AS u ON p.id_usuario = u.id  \r\n"
+			+ "INNER JOIN categoria AS c ON p.id_categoria = c.id\r\n"
+			+ "WHERE p.id = ? AND id_usuario = ?  ORDER BY p.nombre ASC LIMIT 500;";
 
 	private static final String SQL_GET_UPDATE_BY_USER = "UPDATE producto SET " + " nombre = ?, " + " descripcion = ?, "
 			+ " imagen = ?, " + " precio = ?, " + " descuento = ?, " + " id_usuario = ? "
@@ -340,8 +352,13 @@ public class ProductoDAO implements IProductoDAO {
 		Usuario u = new Usuario();
 		u.setNombre(rs.getString("nombre_usuario"));
 		u.setId(rs.getInt("id_usuario"));
-
 		p.setUsuario(u);
+
+		Categoria c = new Categoria();
+		c.setId(rs.getInt("id_categoria"));
+		c.setNombre(rs.getString("nombre_categoria"));
+		p.setCategoria(c);
+
 		return p;
 	}
 

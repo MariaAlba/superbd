@@ -66,6 +66,20 @@ public class InicioController extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		// prueba rapida de crear categoria
+		try {
+			Categoria c = new Categoria();
+			c.setNombre("mock" + System.currentTimeMillis());
+			daoCategoria.create(c);
+
+			c.setNombre(c.getNombre() + "updated");
+			daoCategoria.update(c.getId(), c);
+
+			daoCategoria.delete(c.getId());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// llamar al DAO capa modelo
 		ArrayList<Producto> productos = (ArrayList<Producto>) dao.getAll();
@@ -73,6 +87,10 @@ public class InicioController extends HttpServlet {
 
 		request.setAttribute("productos", productos);
 		request.setAttribute("categorias", categorias);
+		request.setAttribute("cat1", daoCategoria.getById(1));
+		request.setAttribute("cat2", daoCategoria.getById(2));
+		request.setAttribute("cat3", daoCategoria.getById(3));
+		request.setAttribute("cat4", daoCategoria.getById(4));
 		request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_PRIMARY, "Los últimos productos destacados."));
 
 		request.getRequestDispatcher("index.jsp").forward(request, response);

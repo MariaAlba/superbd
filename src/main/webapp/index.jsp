@@ -2,7 +2,10 @@
 
 <%@ include file="includes/header.jsp" %>   
     	
-    	<p>${categorias }</p>
+    	<p class="alert alert-success">Categoria 1 => ${cat1.nombre }</p>
+    	<p class="alert alert-info">Categoria 2 => ${cat2.nombre }</p>
+    	<p class="alert alert-dangers">Categoria 3 => ${cat3.nombre }</p>
+    	<p class="alert alert-warning">Categoria 4 => ${cat4.nombre }</p>
 
         <div class="row contenedor-productos">
         
@@ -12,6 +15,8 @@
 	
 	                <!-- producto -->
 	                <div class="producto">
+	                <p class="text-center bg-primary text-light py-1 mb-0">${p.categoria.nombre }</p>
+	                  <p class="text-center bg-warning mt-0">${p.usuario.nombre }</p>
 	                    <span class="descuento">${p.descuento}%</span>
 	                    <img src="${p.imagen}" alt="imagen de ${p.nombre}">
 	
@@ -26,6 +31,7 @@
 	                        </p>
 	                        <p class="text-muted precio-unidad ">${p.nombre}</p>
 	                        <p class="descripcion text-truncate">${p.descripcion}</p>
+	                        
 	                    </div>
 	
 	                    <div class="botones">
@@ -34,6 +40,7 @@
 	                        <button class="plus">+</button>
 	                    </div>
 	
+	                      
 	                    <button class="carro">añadir al carro</button>
 	
 	                </div>
