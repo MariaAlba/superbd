@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import com.ipartek.formacion.supermercado.model.ConnectionManager;
 import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 import com.ipartek.formacion.supermercado.modelo.pojo.Usuario;
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
 public class ProductoDAO implements IProductoDAO {
 
@@ -43,10 +42,11 @@ public class ProductoDAO implements IProductoDAO {
 			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " WHERE p.id_usuario = ? "
 			+ " ORDER BY p.nombre ASC LIMIT 500;";
 
-	private static final String SQL_GET_BY_ID_BY_USER = " SELECT p.id as id_producto, p.nombre as nombre_producto, p.descripcion, p.imagen, p.precio, p.descuento, "
-			+ " u.nombre as nombre_usuario, u.id as id_usuario " + " FROM producto  AS p "
-			+ " INNER JOIN usuario AS u ON p.id_usuario = u.id " + " WHERE p.id_usuario = ? AND p.id = ?"
-			+ " ORDER BY p.nombre ASC LIMIT 500;";
+	private static final String SQL_GET_BY_ID_BY_USER = " SELECT p.id as id_producto, \r\n"
+			+ "p.nombre as nombre_producto, \r\n" + "p.descripcion, p.imagen, \r\n" + "p.precio, p.descuento,  \r\n"
+			+ "u.nombre as nombre_usuario, \r\n" + "u.id as id_usuario\r\n"
+			+ "FROM producto  AS p  INNER JOIN usuario AS u \r\n"
+			+ "ON p.id_usuario = u.id  WHERE p.id = ? AND id_usuario = ?  ORDER BY p.nombre ASC LIMIT 500;";
 
 	private static final String SQL_GET_UPDATE_BY_USER = "UPDATE producto SET " + " nombre = ?, " + " descripcion = ?, "
 			+ " imagen = ?, " + " precio = ?, " + " descuento = ?, " + " id_usuario = ? "
@@ -144,7 +144,8 @@ public class ProductoDAO implements IProductoDAO {
 	}
 
 	@Override
-	public Producto getByIdByUser(int idProducto, int idUsuario) throws SQLException, ProductoException {
+	public Producto getByIdByUser(int idProducto, int idUsuario) throws ProductoException {
+
 		Producto p = null;
 
 		try (Connection con = ConnectionManager.getConnection();
@@ -164,9 +165,11 @@ public class ProductoDAO implements IProductoDAO {
 					LOG.warn("No se encuentra producto");
 					throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
 				}
-			} // try 2
+			}
 
-		} // try1
+		} catch (SQLException e) {
+			throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
+		}
 
 		return p;
 	}
@@ -210,17 +213,20 @@ public class ProductoDAO implements IProductoDAO {
 
 			LOG.debug(pst);
 
-			int affectedRows = pst.executeUpdate(); // eliminar
+			int affectedRows = pst.executeUpdate();
+
 			if (affectedRows == 1) {
 				LOG.debug("registro eliminado");
 
 			} else {
 
-				LOG.warn("No te pertenece producto al usuario");
+				LOG.warn("El producto no pertenece al usuario");
 				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
 
 			}
 
+		} catch (SQLException e) {
+			throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
 		}
 		return registro;
 	}
@@ -258,9 +264,13 @@ public class ProductoDAO implements IProductoDAO {
 				PreparedStatement pst = con.prepareStatement(SQL_GET_UPDATE_BY_USER)) {
 
 			pst.setString(1, pojo.getNombre());
-			pst.setInt(2, pojo.getUsuario().getId());
-			pst.setInt(3, idProducto);
-			pst.setInt(4, idUsuario);
+			pst.setString(2, pojo.getDescripcion());
+			pst.setString(3, pojo.getImagen());
+			pst.setFloat(4, pojo.getPrecio());
+			pst.setInt(5, pojo.getDescuento());
+			pst.setInt(6, idUsuario);
+			pst.setInt(7, idProducto);
+			pst.setInt(8, idUsuario);
 
 			LOG.debug(pst);
 
@@ -272,7 +282,7 @@ public class ProductoDAO implements IProductoDAO {
 				LOG.warn("No le pertence el producto");
 				throw new ProductoException(ProductoException.EXCEPTION_UNAUTHORIZED);
 			}
-		} catch (MySQLIntegrityConstraintViolationException e) {
+		} catch (SQLException e) {
 
 			LOG.debug("ya existe el nombre del producto");
 			throw e;
