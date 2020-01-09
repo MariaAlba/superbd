@@ -74,30 +74,31 @@ public class CategoriaDAO implements ICategoriaDAO {
 		LOG.trace("GET BY ID");
 
 		Categoria registro = new Categoria();
+
 		try (Connection con = ConnectionManager.getConnection();
 				CallableStatement cs = con.prepareCall("{CALL pa_categoria_getbyid(?)}");) {
-
-			LOG.debug(cs);
 
 			// parametro entrada
 			cs.setInt(1, id);
 
+			LOG.debug(cs);
+
 			try (ResultSet rs = cs.executeQuery();) {
-				// TODO mapper
-				while (rs.next()) {
-					registro.setId(rs.getInt("id"));
-					registro.setNombre(rs.getString("nombre"));
-
+				if (rs.next()) {
+					registro = mapper(rs);
+				} else {
+					registro = null;
 				}
+//				while (rs.next()) {
+//					registro.setId(rs.getInt("id"));
+//					registro.setNombre(rs.getString("nombre"));
+//
+//				}
 			}
+		}
 
-			catch (Exception e) {
-				LOG.error(e);
-			}
-
-		} catch (SQLException e1) {
-			LOG.error(e1);
-			e1.printStackTrace();
+		catch (Exception e) {
+			LOG.error(e);
 		}
 
 		return registro;
@@ -108,24 +109,23 @@ public class CategoriaDAO implements ICategoriaDAO {
 
 		LOG.trace("DELETE de categoria");
 
-		Categoria registro = new Categoria();
+		// recuperar categoria antes de eliminar
+		Categoria registro = getById(id);
+		if (registro == null) {
+			throw new Exception("registro no encontrado");
+		}
 
 		try (Connection con = ConnectionManager.getConnection();
-				CallableStatement cs = con.prepareCall("{CALL pa_categoria_delete(?,?,?)}");) {
+				CallableStatement cs = con.prepareCall("{CALL pa_categoria_delete(?)}");) {
 
 			// parametro entrada
 			cs.setInt(1, id);
 
-			// parametro salida
-			cs.registerOutParameter(2, java.sql.Types.INTEGER);
-			cs.registerOutParameter(3, java.sql.Types.VARCHAR);
+			LOG.debug(cs);
 
 			// ejecuto producto almacenado //CUIDADO NO ES UNA SELECT =>EXECUTEQUERY
 			cs.executeUpdate();
 
-			// una vez ejecutado recuperamos parametro de salida 2
-			registro.setId(cs.getInt(2));
-			registro.setNombre(cs.getString(3));
 		}
 
 		return registro;
@@ -134,26 +134,25 @@ public class CategoriaDAO implements ICategoriaDAO {
 	@Override
 	public Categoria update(int id, Categoria pojo) throws Exception {
 
-		LOG.trace("UPDATE de categoria");
+		// registro y pojo apuntan a la misma posicion de memoria
+
+		LOG.trace("UPDATE de categoria por id :" + id + " pojo " + pojo);
 
 		try (Connection con = ConnectionManager.getConnection();
-				CallableStatement cs = con.prepareCall("{CALL pa_categoria_update(?,?,?)}");) {
+				CallableStatement cs = con.prepareCall("{CALL pa_categoria_update(?,?)}");) {
 
 			// parametro entrada
-			cs.setString(2, pojo.getNombre());
 			cs.setInt(1, pojo.getId());
-
-			// parametro salida
-			cs.registerOutParameter(3, java.sql.Types.VARCHAR);
+			cs.setString(2, pojo.getNombre());
 
 			LOG.debug(cs);
 
 			// ejecuto producto almacenado //CUIDADO NO ES UNA SELECT =>EXECUTEQUERY
-			cs.executeUpdate();
-
-			// una vez ejecutado recuperamos parametro de salida 2
-			pojo.setId(cs.getInt(1));
-			pojo.setNombre(cs.getString(2));
+			if (cs.executeUpdate() == 1) {
+				pojo.setId(id);
+			} else {
+				throw new Exception("No se puede modificar registro " + pojo + " por id " + id);
+			}
 		}
 
 		return pojo;
@@ -187,4 +186,15 @@ public class CategoriaDAO implements ICategoriaDAO {
 		return registro;
 	}
 
+	private Categoria mapper(ResultSet rs) {
+		Categoria c = new Categoria();
+		try {
+			c.setId(rs.getInt("id"));
+			c.setNombre(rs.getString("nombre"));
+		} catch (SQLException e) {
+			LOG.error(e);
+			e.printStackTrace();
+		}
+		return c;
+	}
 }

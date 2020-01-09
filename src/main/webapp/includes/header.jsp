@@ -42,6 +42,19 @@
             </a>
             
             <c:if test="${empty usuarioLogeado }" >
+            	<div class="nav-item">
+            		<select class="form-control">
+            		<option value="0">Todas las categorías</option>
+            		<c:forEach items="${categorias}" var="cat">
+            			<option value="${cat.id }">${cat.nombre}</option>
+            		</c:forEach>
+            		</select>
+            	</div>
+            	
+            	<div class="nav-item">
+            		<input type="text" class="form-control" placeholder="Buscar por nombre">
+            	</div>
+       
             	<a class="py-2 d-none d-md-inline-block" href="login.jsp">Login</a>
             </c:if>
             
@@ -61,6 +74,14 @@
 			          <a class="dropdown-item" href="seguridad/usuarios?accion=formulario">Nuevo</a>			          
 			        </div>
       			</div>
+      			<div class="nav-item dropdown show">
+        			<a class="nav-link dropdown-toggle" href="#" id="dropdown02" data-toggle="dropdown">Categorias</a>
+			        <div class="dropdown-menu" aria-labelledby="dropdown02">
+			          <a class="dropdown-item" href="seguridad/categorias?accion=listar">Todas</a>
+			          <a class="dropdown-item" href="seguridad/categorias?accion=formulario">Nueva</a>			          
+			        </div>
+      			</div>
+      			
       			<div class="nav-item dropdown show d-none d-md-inline-block">
         			<a class="nav-link dropdown-toggle" href="#" id="dropdown02" data-toggle="dropdown">${sessionScope.usuarioLogeado.nombre}</a>
 			        <div class="dropdown-menu" aria-labelledby="dropdown02">

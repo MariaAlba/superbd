@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
 import com.ipartek.formacion.supermercado.model.ConnectionManager;
 import com.ipartek.formacion.supermercado.modelo.dao.CategoriaDAO;
 import com.ipartek.formacion.supermercado.modelo.dao.ProductoDAO;
@@ -24,6 +26,7 @@ import com.ipartek.formacion.supermercado.modelo.pojo.Producto;
 public class InicioController extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
+	private static final Logger LOG = Logger.getLogger(InicioController.class);
 	private static ProductoDAO dao;
 	private static CategoriaDAO daoCategoria;
 
@@ -77,7 +80,7 @@ public class InicioController extends HttpServlet {
 
 			daoCategoria.delete(c.getId());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			LOG.debug(e);
 			e.printStackTrace();
 		}
 

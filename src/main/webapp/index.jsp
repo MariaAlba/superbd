@@ -2,10 +2,7 @@
 
 <%@ include file="includes/header.jsp" %>   
     	
-    	<p class="alert alert-success">Categoria 1 => ${cat1.nombre }</p>
-    	<p class="alert alert-info">Categoria 2 => ${cat2.nombre }</p>
-    	<p class="alert alert-dangers">Categoria 3 => ${cat3.nombre }</p>
-    	<p class="alert alert-warning">Categoria 4 => ${cat4.nombre }</p>
+    	
 
         <div class="row contenedor-productos">
         

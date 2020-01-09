@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `categoria` (
   `nombre` varchar(150) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nombre_UNIQUE` (`nombre`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
 
 -- Volcando datos para la tabla supermercado.categoria: ~1 rows (aproximadamente)
 DELETE FROM `categoria`;
@@ -33,13 +33,15 @@ INSERT INTO `categoria` (`id`, `nombre`) VALUES
 	(2, 'alimentacion'),
 	(5, 'felinos'),
 	(1, 'general\r\n'),
-	(9, 'maquillaje'),
 	(4, 'medicinas'),
-	(16, 'mock1578484745907updated'),
-	(17, 'mock1578484797095updated'),
-	(18, 'mock1578484855727updated'),
-	(19, 'mock1578485666848updated'),
-	(3, 'musica');
+	(33, 'mock1578487987010updated'),
+	(35, 'mock1578553858423updated'),
+	(36, 'mock1578553914866updated'),
+	(37, 'mock1578553948285updated'),
+	(38, 'mock1578553955842updated'),
+	(39, 'mock1578553960025updated'),
+	(3, 'musica'),
+	(34, 'up');
 /*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 
 -- Volcando estructura para tabla supermercado.producto
@@ -125,9 +127,7 @@ INSERT INTO `usuario` (`id`, `nombre`, `contrasenia`, `id_rol`) VALUES
 DROP PROCEDURE IF EXISTS `pa_categoria_delete`;
 DELIMITER //
 CREATE PROCEDURE `pa_categoria_delete`(
-	IN `p_id` INT,
-	OUT `p_idDeleted` INT,
-	OUT `p_nombreDeleted` VARCHAR(100)
+	IN `p_id` INT
 )
 BEGIN
 
@@ -189,14 +189,12 @@ DROP PROCEDURE IF EXISTS `pa_categoria_update`;
 DELIMITER //
 CREATE PROCEDURE `pa_categoria_update`(
 	IN `p_id` INT,
-	IN `p_nombre` VARCHAR(100),
-	OUT `p_prevnombre` VARCHAR(100)
+	IN `p_nombre` VARCHAR(100)
 )
 BEGIN
 
 	UPDATE categoria SET nombre = p_nombre
 	WHERE id = p_id;
-
 
 END//
 DELIMITER ;
