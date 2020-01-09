@@ -12,6 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 
+import com.ipartek.formacion.supermercado.modelo.dao.CategoriaDAO;
 import com.ipartek.formacion.supermercado.modelo.dao.ProductoDAO;
 import com.ipartek.formacion.supermercado.modelo.dao.UsuarioDAO;
 import com.ipartek.formacion.supermercado.modelo.pojo.Alerta;
@@ -30,6 +31,7 @@ public class LoginController extends HttpServlet {
 
 	private static UsuarioDAO usuarioDao = UsuarioDAO.getInstance();
 	private static ProductoDAO productoDao = ProductoDAO.getInstance();
+	private static CategoriaDAO categoriaDao = CategoriaDAO.getInstance();
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
@@ -69,6 +71,7 @@ public class LoginController extends HttpServlet {
 					request.setAttribute("productosTodosNum", todos.size());
 					request.setAttribute("productosAdminNum", productoDao.getAllByUser(usuario.getId()).size());
 					request.setAttribute("usuariosTodosNum", usuarioDao.getAll().size());
+					request.setAttribute("categoriasTodosNum", categoriaDao.getAll().size());
 					view = "seguridad/index.jsp";
 				} else {
 					// accedemos frontoffice

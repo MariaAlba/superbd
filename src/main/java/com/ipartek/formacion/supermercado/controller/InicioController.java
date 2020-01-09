@@ -90,10 +90,6 @@ public class InicioController extends HttpServlet {
 
 		request.setAttribute("productos", productos);
 		request.setAttribute("categorias", categorias);
-		request.setAttribute("cat1", daoCategoria.getById(1));
-		request.setAttribute("cat2", daoCategoria.getById(2));
-		request.setAttribute("cat3", daoCategoria.getById(3));
-		request.setAttribute("cat4", daoCategoria.getById(4));
 		request.setAttribute("mensajeAlerta", new Alerta(Alerta.TIPO_PRIMARY, "Los últimos productos destacados."));
 
 		request.getRequestDispatcher("index.jsp").forward(request, response);

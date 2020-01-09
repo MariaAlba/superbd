@@ -71,33 +71,24 @@ public class CategoriaDAO implements ICategoriaDAO {
 	@Override
 	public Categoria getById(int id) {
 
-		LOG.trace("GET BY ID");
-
+		LOG.trace("recuperar categoria por id " + id);
 		Categoria registro = new Categoria();
 
 		try (Connection con = ConnectionManager.getConnection();
-				CallableStatement cs = con.prepareCall("{CALL pa_categoria_getbyid(?)}");) {
+				CallableStatement cs = con.prepareCall("{ CALL pa_categoria_getbyid(?) }");) {
 
-			// parametro entrada
 			cs.setInt(1, id);
-
 			LOG.debug(cs);
 
-			try (ResultSet rs = cs.executeQuery();) {
+			try (ResultSet rs = cs.executeQuery()) {
 				if (rs.next()) {
 					registro = mapper(rs);
 				} else {
 					registro = null;
 				}
-//				while (rs.next()) {
-//					registro.setId(rs.getInt("id"));
-//					registro.setNombre(rs.getString("nombre"));
-//
-//				}
 			}
-		}
 
-		catch (Exception e) {
+		} catch (Exception e) {
 			LOG.error(e);
 		}
 
@@ -161,7 +152,7 @@ public class CategoriaDAO implements ICategoriaDAO {
 	@Override
 	public Categoria create(Categoria pojo) throws Exception {
 
-		LOG.trace("insertar nueva categoruia");
+		LOG.trace("insertar nueva categoria " + pojo);
 
 		Categoria registro = pojo;
 
@@ -176,8 +167,10 @@ public class CategoriaDAO implements ICategoriaDAO {
 
 			LOG.debug(cs);
 
-			// ejecuto producto almacenado //CUIDADO NO ES UNA SELECT =>EXECUTEQUERY
-			cs.executeUpdate();
+			// executamos el procedimiento almacenado executeUpdate, CUIDADO no es una
+			// SELECT => executeQuery
+			int affectedRows = cs.executeUpdate();
+			LOG.debug("registros creados " + affectedRows);
 
 			// una vez ejecutado recuperamos parametro de salida 2
 			pojo.setId(cs.getInt(2));
@@ -186,15 +179,13 @@ public class CategoriaDAO implements ICategoriaDAO {
 		return registro;
 	}
 
-	private Categoria mapper(ResultSet rs) {
+	private Categoria mapper(ResultSet rs) throws SQLException {
+
 		Categoria c = new Categoria();
-		try {
-			c.setId(rs.getInt("id"));
-			c.setNombre(rs.getString("nombre"));
-		} catch (SQLException e) {
-			LOG.error(e);
-			e.printStackTrace();
-		}
+		c.setId(rs.getInt("id"));
+		c.setNombre(rs.getString("nombre"));
+
 		return c;
+
 	}
 }
